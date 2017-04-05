@@ -28,9 +28,7 @@ func main() {
 
 func handle(conn net.Conn) {
 	defer conn.Close()
-
 	request(conn)
-	respond(conn)
 }
 
 func request(conn net.Conn) {
@@ -41,20 +39,89 @@ func request(conn net.Conn) {
 		fmt.Println(ln)
 
 		if i == 0 {
-			m := strings.Fields(ln)[0]
-			u := strings.Fields(ln)[1]
-			fmt.Println("***METHOD:", m)
-			fmt.Println("***URI:", u)
+			mux(conn, ln)
 		}
 		if ln == "" {
-			break
+			break // headers are done
 		}
 		i++
 	}
 }
 
-func respond(conn net.Conn) {
-	body := `<!DOCTYPE html><html lang="en"><head><meta charet="UTF-8"><title></title></head><body><strong>Hello World</strong></body></html>`
+func mux(conn net.Conn, ln string){
+	// request line
+	m := strings.Fields(ln)[0]
+	u := strings.Fields(ln)[1]
+
+	fmt.Println("***METHOD:", m)
+	fmt.Println("***URI:", u)
+
+	// multiplexer
+	if m == "GET" && u == "/" {
+		index(conn)
+	}
+	if m == "GET" && u == "/about" {
+		about(conn)
+	}
+	if m == "GET" && u == "/contact" {
+		contact(conn)
+	}
+	if m == "GET" && u == "/apply" {
+		apply(conn)
+	}
+	if m == "POST" && u == "/apply" {
+		applyProcess(conn)
+	}
+}
+
+func index(conn net.Conn) {
+	body := `<!DOCTYPE html><html lang="en"><head>
+	<meta charet="UTF-8"><title></title></head>
+	<body>
+	<strong>INDEX</strong><br>
+	<a hres="/">index</a><br>
+	<a hres="/about">about</a><br>
+	<a hres="/contact">contact</a><br>
+	<a hres="/apply">apply</a><br>
+	</body></html>`
+
+	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
+	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
+	fmt.Fprint(conn, "Content-Type: text/html\r\n")
+	fmt.Fprint(conn, "\r\n")
+	fmt.Fprint(conn, body)
+}
+
+func about(conn net.Conn) {
+	body := `<!DOCTYPE html><html lang="en"><head>
+	<meta charet="UTF-8"><title></title></head>
+	<body>
+	<strong>ABOUT</strong><br>
+	<a hres="/">index</a><br>
+	<a hres="/about">about</a><br>
+	<a hres="/contact">contact</a><br>
+	<a hres="/apply">apply</a><br>
+	<p>Non quia et commodi aliquam repellendus exercitationem voluptatem. Suscipit eaque sit qui facilis tempore itaque in amet. Et vero aut voluptatibus. Non sit ipsum quasi saepe eaque eum in. Qui cumque sint rem est perspiciatis temporibus quibusdam natus.</p>
+	</body></html>`
+
+	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
+	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
+	fmt.Fprint(conn, "Content-Type: text/html\r\n")
+	fmt.Fprint(conn, "\r\n")
+	fmt.Fprint(conn, body)
+}
+
+func contact(conn net.Conn) {
+	body := `<!DOCTYPE html><html lang="en"><head>
+	<meta charet="UTF-8"><title></title></head>
+	<body>
+	<strong>ABOUT</strong><br>
+	<a hres="/">index</a><br>
+	<a hres="/about">about</a><br>
+	<a hres="/contact">contact</a><br>
+	<a hres="/apply">apply</a><br>
+	<p>Non quia et commodi aliquam repellendus exercitationem voluptatem. Suscipit eaque sit qui facilis tempore itaque in amet. Et vero aut voluptatibus. Non sit ipsum quasi saepe eaque eum in. Qui cumque sint rem est perspiciatis temporibus quibusdam natus.</p>
+	</body></html>`
 
 	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
 	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
