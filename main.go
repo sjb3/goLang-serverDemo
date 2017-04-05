@@ -75,10 +75,11 @@ func mux(conn net.Conn, ln string){
 }
 
 func index(conn net.Conn) {
-	body := `<!DOCTYPE html><html lang="en"><head>
+	body := `<!DOCTYPE html>
+	<html lang="en"><head>
 	<meta charet="UTF-8"><title></title></head>
 	<body>
-	<strong>INDEX</strong><br>
+	<h2>INDEX</h2><br>
 	<a hres="/">index</a><br>
 	<a hres="/about">about</a><br>
 	<a hres="/contact">contact</a><br>
@@ -93,10 +94,11 @@ func index(conn net.Conn) {
 }
 
 func about(conn net.Conn) {
-	body := `<!DOCTYPE html><html lang="en"><head>
+	body := `<!DOCTYPE html>
+	<html lang="en"><head>
 	<meta charet="UTF-8"><title></title></head>
 	<body>
-	<strong>ABOUT</strong><br>
+	<h2>ABOUT</h2><br>
 	<a hres="/">index</a><br>
 	<a hres="/about">about</a><br>
 	<a hres="/contact">contact</a><br>
@@ -112,16 +114,41 @@ func about(conn net.Conn) {
 }
 
 func contact(conn net.Conn) {
-	body := `<!DOCTYPE html><html lang="en"><head>
+	body := `<!DOCTYPE html>
+	<html lang="en"><head>
 	<meta charet="UTF-8"><title></title></head>
 	<body>
-	<strong>ABOUT</strong><br>
+	<h2>CONTACT</h2><br>
 	<a hres="/">index</a><br>
 	<a hres="/about">about</a><br>
 	<a hres="/contact">contact</a><br>
 	<a hres="/apply">apply</a><br>
-	<p>Non quia et commodi aliquam repellendus exercitationem voluptatem. Suscipit eaque sit qui facilis tempore itaque in amet. Et vero aut voluptatibus. Non sit ipsum quasi saepe eaque eum in. Qui cumque sint rem est perspiciatis temporibus quibusdam natus.</p>
+	<p><strong>e-mail: </strong></p>
+	<p><strong>phone: </strong></p>
 	</body></html>`
+
+
+	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
+	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
+	fmt.Fprint(conn, "Content-Type: text/html\r\n")
+	fmt.Fprint(conn, "\r\n")
+	fmt.Fprint(conn, body)
+}
+
+func apply(conn net.Conn) {
+	body := `<!DOCTYPE html>
+	<html lang="en"><head>
+	<meta charet="UTF-8"><title></title></head>
+	<body>
+	<h2>APPLY</h2><br>
+	<a hres="/">index</a><br>
+	<a hres="/about">about</a><br>
+	<a hres="/contact">contact</a><br>
+	<a hres="/apply">apply</a><br>
+	<p><strong>e-mail: </strong></p>
+	<p><strong>phone: </strong></p>
+	</body></html>`
+
 
 	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
 	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
