@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"bufio"
+	"fmt"
 	"log"
 	"net"
 	"strings"
 )
+
 func main() {
 	li, err := net.Listen("tcp", ":8080")
 
@@ -41,7 +42,9 @@ func request(conn net.Conn) {
 
 		if i == 0 {
 			m := strings.Fields(ln)[0]
+			u := strings.Fields(ln)[1]
 			fmt.Println("***METHOD:", m)
+			fmt.Println("***URI:", u)
 		}
 		if ln == "" {
 			break
