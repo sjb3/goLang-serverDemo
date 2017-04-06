@@ -48,7 +48,7 @@ func request(conn net.Conn) {
 	}
 }
 
-func mux(conn net.Conn, ln string){
+func mux(conn net.Conn, ln string) {
 	// request line
 	m := strings.Fields(ln)[0]
 	u := strings.Fields(ln)[1]
@@ -80,10 +80,10 @@ func index(conn net.Conn) {
 	<meta charet="UTF-8"><title></title></head>
 	<body>
 	<h2>INDEX</h2><br>
-	<a hres="/">index</a><br>
-	<a hres="/about">about</a><br>
-	<a hres="/contact">contact</a><br>
-	<a hres="/apply">apply</a><br>
+	<a href="/">index</a><br>
+	<a href="/about">about</a><br>
+	<a href="/contact">contact</a><br>
+	<a href="/apply">apply</a><br>
 	</body></html>`
 
 	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
@@ -99,10 +99,10 @@ func about(conn net.Conn) {
 	<meta charet="UTF-8"><title></title></head>
 	<body>
 	<h2>ABOUT</h2><br>
-	<a hres="/">index</a><br>
-	<a hres="/about">about</a><br>
-	<a hres="/contact">contact</a><br>
-	<a hres="/apply">apply</a><br>
+	<a href="/">index</a><br>
+	<a href="/about">about</a><br>
+	<a href="/contact">contact</a><br>
+	<a href="/apply">apply</a><br>
 	<p>Non quia et commodi aliquam repellendus exercitationem voluptatem. Suscipit eaque sit qui facilis tempore itaque in amet. Et vero aut voluptatibus. Non sit ipsum quasi saepe eaque eum in. Qui cumque sint rem est perspiciatis temporibus quibusdam natus.</p>
 	</body></html>`
 
@@ -119,14 +119,13 @@ func contact(conn net.Conn) {
 	<meta charet="UTF-8"><title></title></head>
 	<body>
 	<h2>CONTACT</h2><br>
-	<a hres="/">index</a><br>
-	<a hres="/about">about</a><br>
-	<a hres="/contact">contact</a><br>
-	<a hres="/apply">apply</a><br>
+	<a href="/">index</a><br>
+	<a href="/about">about</a><br>
+	<a href="/contact">contact</a><br>
+	<a href="/apply">apply</a><br>
 	<p><strong>e-mail: </strong></p>
 	<p><strong>phone: </strong></p>
 	</body></html>`
-
 
 	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
 	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
@@ -141,14 +140,34 @@ func apply(conn net.Conn) {
 	<meta charet="UTF-8"><title></title></head>
 	<body>
 	<h2>APPLY</h2><br>
-	<a hres="/">index</a><br>
-	<a hres="/about">about</a><br>
-	<a hres="/contact">contact</a><br>
-	<a hres="/apply">apply</a><br>
-	<p><strong>e-mail: </strong></p>
-	<p><strong>phone: </strong></p>
+	<a href="/">index</a><br>
+	<a href="/about">about</a><br>
+	<a href="/contact">contact</a><br>
+	<a href="/apply">apply</a><br>
+	<form method="post" action="/apply">
+	<input type="submit" value="apply">
+	</form>
 	</body></html>`
 
+	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
+	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
+	fmt.Fprint(conn, "Content-Type: text/html\r\n")
+	fmt.Fprint(conn, "\r\n")
+	fmt.Fprint(conn, body)
+}
+
+func applyProcess(conn net.Conn) {
+	body := `<!DOCTYPE html>
+	<html lang="en"><head>
+	<meta charet="UTF-8"><title></title></head>
+	<body>
+	<h2>APPLY PROCESS</h2><br>
+	<a href="/">index</a><br>
+	<a href="/about">about</a><br>
+	<a href="/contact">contact</a><br>
+	<a href="/apply">apply</a><br>
+	</form>
+	</body></html>`
 
 	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
 	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
