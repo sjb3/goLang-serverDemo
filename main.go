@@ -1,177 +1,73 @@
 package main
 
 import (
-	"bufio"
+	"github.com/julienschmidt/httprouter"
 	"fmt"
 	"log"
-	"net"
-	"strings"
+	"net/http"
 )
 
+var tpl *template.Template
+
+func init() {
+	tpl = template.Must(template.ParseGlob("templates/*"))
+}
+
 func main() {
-	li, err := net.Listen("tcp", ":8080")
+	mux := httprouter.New()
+	mux.GET("/", index)
+	mux.GET("/about", about)
+	mux.GET("/contact", contact)
+	mux.GET("/apply", apply)
+	mux.POST("/apply", applyProcess)
+	mux.GET("/user/:name", user)
+	mux.GET("/blog/:category/:article", blogRead)
+	mux.POST("/blog/:category/:article", blogWrite)
+	http.ListenAndServe(":8080", mux)
+}
 
+func user(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	fmt.FPtintf(w, "USER, %s!\n", ps.ByName("name"))
+}
+
+func blogRead(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	fmt.FPrintf(w, "READ CATEGORY, %s!\n", ps.ByName("category"))
+	fmt.FPrintf(w, "READ ARTICLE, %s!\n", ps.ByName("article"))
+}
+
+func blogWrite(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	fmt.FPrintf(w, "WRITE CATEGORY, %s!\n", ps.ByName("category"))
+	fmt.FPrintf(w, "WRITE ARTICLE, %s!\n", ps.ByName("article"))
+}
+
+func index(w http.ResponseWriter, req *http.Request, _httprouter.Params) {
+	err := tpl.ExecuteTemplate(w, "index.gohtml", nil)
+	HandleError(w, err)
+}
+
+func about(w http.ResponseWriter, req *http.Request, _httprouter.Params) {
+	err := tpl.ExecuteTemplate(w, "about.gohtml", nil)
+	HandleError(w, err)
+}
+
+func contact(w http.ResponseWriter, req *http.Request, _httprouter.Params) {
+	err := tpl.ExecuteTemplate(w, "contact.gohtml", nil)
+	HandleError(w, err)
+}
+
+func apply(w http.ResponseWriter, req *http.Request, _httprouter.Params) {
+	err := tpl.ExecuteTemplate(w, "apply.gohtml", nil)
+	HandleError(w, err)
+}
+
+func applyProcess(w http.ResponseWriter, req *http.Request, _httprouter.Params) {
+	err := tpl.ExecuteTemplate(w, "applyProcess.gohtml", nil)
+	HandleError(w, err)
+}
+
+func HandleError(w http.ResponseWriter, err error) {
 	if err != nil {
-		log.Fatalln(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Fatalln(err)
 	}
-	defer li.Close()
-
-	for {
-		conn, err := li.Accept()
-		if err != nil {
-			log.Fatalln(err.Error())
-			continue
-		}
-		go handle(conn)
-	}
-}
-
-func handle(conn net.Conn) {
-	defer conn.Close()
-	request(conn)
-}
-
-func request(conn net.Conn) {
-	i := 0
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		ln := scanner.Text()
-		fmt.Println(ln)
-
-		if i == 0 {
-			mux(conn, ln)
-		}
-		if ln == "" {
-			break // headers are done
-		}
-		i++
-	}
-}
-
-func mux(conn net.Conn, ln string) {
-	// request line
-	m := strings.Fields(ln)[0]
-	u := strings.Fields(ln)[1]
-
-	fmt.Println("***METHOD:", m)
-	fmt.Println("***URI:", u)
-
-	// multiplexer
-	if m == "GET" && u == "/" {
-		index(conn)
-	}
-	if m == "GET" && u == "/about" {
-		about(conn)
-	}
-	if m == "GET" && u == "/contact" {
-		contact(conn)
-	}
-	if m == "GET" && u == "/apply" {
-		apply(conn)
-	}
-	if m == "POST" && u == "/apply" {
-		applyProcess(conn)
-	}
-}
-
-func index(conn net.Conn) {
-	body := `<!DOCTYPE html>
-	<html lang="en"><head>
-	<meta charet="UTF-8"><title></title></head>
-	<body>
-	<h2>INDEX</h2><br>
-	<a href="/">index</a><br>
-	<a href="/about">about</a><br>
-	<a href="/contact">contact</a><br>
-	<a href="/apply">apply</a><br>
-	</body></html>`
-
-	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
-	fmt.Fprint(conn, "Content-Type: text/html\r\n")
-	fmt.Fprint(conn, "\r\n")
-	fmt.Fprint(conn, body)
-}
-
-func about(conn net.Conn) {
-	body := `<!DOCTYPE html>
-	<html lang="en"><head>
-	<meta charet="UTF-8"><title></title></head>
-	<body>
-	<h2>ABOUT</h2><br>
-	<a href="/">index</a><br>
-	<a href="/about">about</a><br>
-	<a href="/contact">contact</a><br>
-	<a href="/apply">apply</a><br>
-	<p>Non quia et commodi aliquam repellendus exercitationem voluptatem. Suscipit eaque sit qui facilis tempore itaque in amet. Et vero aut voluptatibus. Non sit ipsum quasi saepe eaque eum in. Qui cumque sint rem est perspiciatis temporibus quibusdam natus.</p>
-	</body></html>`
-
-	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
-	fmt.Fprint(conn, "Content-Type: text/html\r\n")
-	fmt.Fprint(conn, "\r\n")
-	fmt.Fprint(conn, body)
-}
-
-func contact(conn net.Conn) {
-	body := `<!DOCTYPE html>
-	<html lang="en"><head>
-	<meta charet="UTF-8"><title></title></head>
-	<body>
-	<h2>CONTACT</h2><br>
-	<a href="/">index</a><br>
-	<a href="/about">about</a><br>
-	<a href="/contact">contact</a><br>
-	<a href="/apply">apply</a><br>
-	<p><strong>e-mail: </strong></p>
-	<p><strong>phone: </strong></p>
-	</body></html>`
-
-	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
-	fmt.Fprint(conn, "Content-Type: text/html\r\n")
-	fmt.Fprint(conn, "\r\n")
-	fmt.Fprint(conn, body)
-}
-
-func apply(conn net.Conn) {
-	body := `<!DOCTYPE html>
-	<html lang="en"><head>
-	<meta charet="UTF-8"><title></title></head>
-	<body>
-	<h2>APPLY</h2><br>
-	<a href="/">index</a><br>
-	<a href="/about">about</a><br>
-	<a href="/contact">contact</a><br>
-	<a href="/apply">apply</a><br>
-	<form method="post" action="/apply">
-	<input type="submit" value="apply">
-	</form>
-	</body></html>`
-
-	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
-	fmt.Fprint(conn, "Content-Type: text/html\r\n")
-	fmt.Fprint(conn, "\r\n")
-	fmt.Fprint(conn, body)
-}
-
-func applyProcess(conn net.Conn) {
-	body := `<!DOCTYPE html>
-	<html lang="en"><head>
-	<meta charet="UTF-8"><title></title></head>
-	<body>
-	<h2>APPLY PROCESS</h2><br>
-	<a href="/">index</a><br>
-	<a href="/about">about</a><br>
-	<a href="/contact">contact</a><br>
-	<a href="/apply">apply</a><br>
-	</form>
-	</body></html>`
-
-	fmt.Fprint(conn, "HTTP/1.1 200 OK\r\n")
-	fmt.Fprintf(conn, "Content-Length: %d\r\n", len(body))
-	fmt.Fprint(conn, "Content-Type: text/html\r\n")
-	fmt.Fprint(conn, "\r\n")
-	fmt.Fprint(conn, body)
 }
